@@ -1,14 +1,8 @@
 from django.shortcuts import render, redirect
 from catalog.models import Category, Product
 from .forms import ProductForm
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView
 # Create your views here.
-
-
-# class ProductDetailView(DetailView):
-#     model = Product
-#     template_name = 'catalog/details_view.html'  # шаблон который будет обрабатывать
-#     context_object_name = 'product'  # Ключ по которому передаем объект внутрь шаблона
 
 
 class CategoryDetailView(DetailView):
@@ -18,15 +12,26 @@ class CategoryDetailView(DetailView):
     context_object_name = 'categorys'
 
 
-def main(request):
-    category_list = Category.objects.all()
-    if request.method == 'POST':
-        change_category = request.POST.get()
-    context = {
-        'object_list': category_list
-    }
+class Main(ListView):
+    model = Category
+    template_name = 'catalog/main.html'
+    context_object_name = 'object_list'
 
-    return render(request, 'catalog/main.html', context)
+    def get_context_data(self, **kwargs):
+        category_list = Category.objects.all()
+        context = {'object_list': category_list}
+        return context
+
+
+# def main(request):
+#     category_list = Category.objects.all()
+
+#     context = {
+#         'object_list': category_list
+#     }
+#     print(category_list)
+
+#     return render(request, 'catalog/main.html', context)
 
 
 def base(request):
