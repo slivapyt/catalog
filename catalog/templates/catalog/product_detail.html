@@ -1,0 +1,26 @@
+{% extends 'catalog/base.html' %} 
+{% block content %} 
+{% load static %}
+
+<div class="card mb-3">
+    <center>
+        {% if object.preview_img %}
+            <img src="{% static "images/" %}{{ object.preview_img }}" class="card-img-top" style="width: 15%;"  alt="...">
+        {% endif %}
+        <div class="card-body">
+            <h5 class="card-title">{{ object.product_name }}</h5>
+            <p class="card-text">{{ object.description }}</p>
+            <p class="card-text">{{ object.price }} руб.</p>
+            <a class="btn btn-sm btn-outline-success" href="">В корзину</a>
+        </div>
+    </center>
+</div>
+            {% if object.is_active %}
+                <a class="btn btn-sm btn-outline-success" href="{% url 'catalog:toggle_activity' object.pk %}">деактивировать</a>
+            {% else %}
+                <a class="btn btn-sm btn-outline-success" href="{% url 'catalog:toggle_activity' object.pk %}">активировать</a>
+            {% endif %}
+            <a class="btn btn-sm btn-outline-warning" href="{% url 'catalog:update_product' object.pk %}">редактировать</a>
+            <a class="btn btn-sm btn-outline-danger" href="{% url 'catalog:delete_product' object.pk %}">удалить</a>
+{% endblock %}
+

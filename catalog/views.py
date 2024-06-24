@@ -1,91 +1,128 @@
-from django.shortcuts import render, redirect
+from django.forms import inlineformset_factory
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse, reverse_lazy
 from catalog.models import Category, Product
-from .forms import ProductForm
-from django.views.generic import DetailView, ListView
-# Create your views here.
-
+from .forms import ProductForm, CategoryForm
+from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
+from pytils.translit import slugify
 
 class CategoryDetailView(DetailView):
     model = Category
     template_name = 'catalog/category_view.html'  # шаблон который будет обрабатывать
-    # Ключ по которому передаем объект внутрь шаблона
-    context_object_name = 'categorys'
-
+    context_object_name = 'categorys' # Ключ по которому передаем объект внутрь шаблона
 
 class Main(ListView):
     model = Category
     template_name = 'catalog/main.html'
-    context_object_name = 'object_list'
+    def get_queryset(self, *args, **kwargs):
+        queryset = super().get_queryset(*args, **kwargs)
+        return queryset
+
+class ProductDetailView(DetailView):
+    model = Product
+
+class ProductCreateView(CreateView):
+    model = Product
+    fields = (
+        'product_name', 'description', 'preview_img',
+        'category', 'price', 'date_create', 'date_change')
+    success_url = reverse_lazy('catalog:main')
+
+class ProductUpdateView(UpdateView):
+    model = Product
+    fields = (
+        'product_name', 'description', 'preview_img',
+        'category', 'price', 'date_create', 'date_change')
+    success_url = reverse_lazy('catalog:main')
+
+class ProductDeleteView(DeleteView):
+    model = Product
+    success_url = reverse_lazy('main')
+
+def toggle_activity(request, pk):
+    product_item = get_object_or_404(Product, pk=pk)
+    if product_item.is_active:
+        product_item.is_active = False
+    else:
+        product_item.is_active = True
+    product_item.save()
+    return redirect(reverse("catalog:main"))
+
+
+class CategoryUpdateView(UpdateView):
+    model = Category
+    form_class = CategoryForm
+    success_url = reverse_lazy('catalog:main')
 
     def get_context_data(self, **kwargs):
-        category_list = Category.objects.all()
-        context = {'object_list': category_list}
-        return context
-
-
-# def main(request):
-#     category_list = Category.objects.all()
-
-#     context = {
-#         'object_list': category_list
-#     }
-#     print(category_list)
-
-#     return render(request, 'catalog/main.html', context)
-
-
-def base(request):
-    return render(request, 'catalog/base.html')
-
-
-def contact(request):
-    return render(request, 'catalog/contact.html')
-
-
-def about_company(request):
-    return render(request, 'catalog/about_company.html')
-
-
-def delivery(request):
-    return render(request, 'catalog/delivery.html')
-
-
-def profile(request):
-    return render(request, 'catalog/profile.html')
-
-
-def stock(request):
-    return render(request, 'catalog/stock.html')
-
-
-def support(request):
-    return render(request, 'catalog/support.html')
-
-
-def transportation(request):
-    return render(request, 'catalog/transportation.html')
-
-
-def vacancies(request):
-    return render(request, 'catalog/vacancies.html')
-
-
-def create_product(request):
-    error = ''
-    if request.method == "POST":
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('main')
+        context_data = super().get_context_data(**kwargs)
+        ProductFormset =  inlineformset_factory(Category, Product, form=ProductForm, extra=1)
+        if self.request.method == 'POST':
+            context_data['formset'] = ProductFormset(self.request.POST, instance= self.object) # instance= self.object нужно только для редактирования
         else:
-            error = 'Форма была неверной'
-    form = ProductForm()
-    data = {
-        'form': form,
-        'error': error
-    }
-    return render(request, 'catalog/create_product.html', data)
+            context_data['formset'] = ProductFormset(instance=self.object) # instance= self.object нужно только для редактирования
+        return context_data
+    
+    def form_valid(self, form):
+        formset = self.get_context_data()['formset']
+        self.object = form.save()
+        if formset.is_valid():
+            formset.instance = self.object
+            formset.save()
+            
+        return super().form_valid(form)
+    
 
 
-def product(request):
-    return render(request, 'catalog/product.html')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class Base(ListView):
+    model = Category
+    template_name = 'catalog/base.html'
+
+class Contact(ListView):
+    model = Category
+    template_name = 'catalog/contact.html'
+
+class About_company(ListView):
+    model = Category
+    template_name = 'catalog/about_company.html'
+
+class Delivery(ListView):
+    model = Category
+    template_name = 'catalog/delivery.html'
+
+class Profile(ListView):
+    model = Category
+    template_name = 'catalog/profile.html'
+
+class Stock(ListView):
+    model = Category
+    template_name = 'catalog/stock.html'
+
+class Support(ListView):
+    model = Category
+    template_name = 'catalog/support.html'
+
+class Vacancies(ListView):
+    model = Category
+    template_name = 'catalog/vacancies.html'
+
+
+

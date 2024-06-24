@@ -1,7 +1,30 @@
-{% extends 'catalog/base.html' %} {% block content %}
-<a>ну</a>
-<div class="features">
-	<h1>{{ categorys.category }}</h1>
-	<p>{{ categorys.description }}</p>
+{% extends 'catalog/base.html' %}
+{% load static %}
+{% block content %}
+<h1>{{ categorys.category }}</h1>
+
+<div class="container">
+	<div class="row no-gutters" >
+	{% for product_item in object.product_set.all %}
+	<div class="card mb-3" style="max-width: 540px;">
+		<div class="row no-gutters">
+			<div class="col-md-4 ">
+				{% if product_item.preview_img %}
+					<img src="{% static "images/" %}{{ product_item.preview_img }}" alt="..." style="width: 100%;">
+				{% endif %}
+			</div>
+		<div class="col-md-8">
+			<div class="card-body" >
+			<h5 class="card-title">{{ product_item.product_name }}</h5>
+			<p class="card-text"style="min-width: 540px;">{{ product_item.description }}</p>
+			<p class="card-text">{{ product_item.price }} руб.</p>
+			<a class="btn btn-sm btn-outline-secondary" href="{% url 'catalog:view' product_item.pk %}">Просмотр</a>
+			<a class="btn btn-sm btn-outline-success" href="">В корзину</a>
+			</div>
+		</div>
+	</div>
+</div>
+{% endfor %}
+</div>
 </div>
 {% endblock %}
