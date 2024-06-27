@@ -1,5 +1,7 @@
 from django.db import models
 
+NULLABLE = {'blank': True, 'null': True}
+
 class Material(models.Model):
     title = models.CharField(max_length=150, verbose_name='название')
     body = models.TextField(verbose_name='содержимое')
@@ -7,6 +9,7 @@ class Material(models.Model):
     views_count = models.IntegerField(default=0, verbose_name='просмотры')
     is_published = models.BooleanField(default=True, verbose_name='опубликовано')
     slug = models.CharField(max_length=150, verbose_name='slug', null=True, blank=True)
+    email = models.CharField(max_length=150, verbose_name='email', unique=True, **NULLABLE)
 
     def __str__(self):
         return self.title
